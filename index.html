@@ -1,3 +1,326 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:4a82603487f0d008e2c09085c07926c2e1206d7e9f4976369d4081a3067185db
-size 52339947
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Anthony Ionno" />
+
+<meta name="date" content="2018-05-26" />
+
+<title>A Geospatial Analysis of Standardized Math Scores for Grade 3 and 6 Students in Ontario</title>
+
+<script src="index_files/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="index_files/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="index_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="index_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="index_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="index_files/navigation-1.1/tabsets.js"></script>
+<script src="index_files/navigation-1.1/codefolding.js"></script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { font-weight: bold; } /* Keyword */
+code > span.dt { text-decoration: underline; } /* DataType */
+code > span.co { font-style: italic; } /* Comment */
+code > span.al { font-weight: bold; } /* Alert */
+code > span.er { font-weight: bold; } /* Error */
+code > span.wa { font-style: italic; } /* Warning */
+code > span.cf { font-weight: bold; } /* ControlFlow */
+code > span.pp { font-weight: bold; } /* Preprocessor */
+code > span.do { font-style: italic; } /* Documentation */
+code > span.an { font-style: italic; } /* Annotation */
+code > span.cv { font-style: italic; } /* CommentVar */
+code > span.in { font-style: italic; } /* Information */
+div.sourceCode {
+  overflow-x: visible;
+}
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+
+
+
+
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">A Geospatial Analysis of Standardized Math Scores for Grade 3 and 6 Students in Ontario</h1>
+<h4 class="author"><em>Anthony Ionno</em></h4>
+<h4 class="date"><em>May 26, 2018</em></h4>
+
+</div>
+
+<div id="TOC">
+<ul>
+<li><a href="#summary">Summary</a></li>
+<li><a href="#analysis">Analysis</a><ul>
+<li><a href="#data">Data</a></li>
+<li><a href="#r-libraries">R Libraries</a></li>
+<li><a href="#preprocessing">Preprocessing</a></li>
+<li><a href="#results">Results</a><ul>
+<li><a href="#proportion-of-grade-3-students-meeting-provincial-standard-in-mathematics-by-fsa">Proportion of Grade 3 Students Meeting Provincial Standard in Mathematics by FSA</a></li>
+<li><a href="#proportion-of-grade-6-students-meeting-provincial-standard-in-mathematics-by-fsa">Proportion of Grade 6 Students Meeting Provincial Standard in Mathematics by FSA</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</div>
+
+<div id="summary" class="section level2">
+<h2>Summary</h2>
+<p>This post identifies how well Grade 3 and 6 students are performing in terms of their Education Quality and Accountability (EQAO) mathematics score. The two data visualizations below are broken down by Forward Sortation Area (FSA) for the entire province. Within each FSA is a percentage that identifies the proportion of Grade 3 or 6 students that are achieving the provincial standard, based on EQAO scores, in mathematics.</p>
+<p>More information on EQAO scores can be located at the <a href="http://www.eqao.com/en">EQAO website</a>.</p>
+</div>
+<div id="analysis" class="section level2">
+<h2>Analysis</h2>
+<div id="data" class="section level3">
+<h3>Data</h3>
+<p>Three sets of data were used in this analysis: 1) <a href="https://www.ontario.ca/data/school-information-and-student-demographics">School information and student demographics</a> which contains Data on all publicly funded schools in Ontario, including school board, school address, provincial test results, student population demographics and class sizes; 2) <a href="https://www.ontario.ca/data/primary-class-size">Primary class size</a> contains class sizes for each school in Ontario from grades 1 through 3 and a summation from grades 4 through 8; and 3) <a href="http://www5.statcan.gc.ca/olc-cel/olc.action?ObjId=92-179-X&amp;ObjType=2&amp;lang=en&amp;limit=0">FSA boundary file for Canada</a> depicts the boundaries of forward sortation areas (FSAs) derived from postal codes captured from census questionnaires.</p>
+</div>
+<div id="r-libraries" class="section level3">
+<h3>R Libraries</h3>
+<p>The following R libraries were loaded into R for this analysis.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr);<span class="kw">library</span>(magrittr);<span class="kw">library</span>(ggplot2);<span class="kw">library</span>(readr)
+<span class="kw">library</span>(readxl);<span class="kw">library</span>(extrafont);<span class="kw">library</span>(tmap);<span class="kw">library</span>(rgdal);
+<span class="kw">library</span>(raster);<span class="kw">library</span>(tmaptools);<span class="kw">library</span>(tidyverse)</code></pre></div>
+</div>
+<div id="preprocessing" class="section level3">
+<h3>Preprocessing</h3>
+<p>Several steps were required in order to clean and prep the data for analysis. School information and demographic data (SISD) had to be read into R, unsavory values (ie NA values) were removed and subsets of grade 3 and 6 information were constructed from the full set of data. The class size dataset (CSD), which contains information on primary class size information for every classroom and every school was summarized at the school-level in order to merge this dataset with the SISD dataset, which contains school and FSA information.</p>
+<p>A weighted achievement score was created using the merged SISD and CSD dataset which was then merged with the geospatial dataset.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Student grades and LI information </span>
+
+<span class="co"># Reading geospatial information on student achievement and LI proportions</span>
+df&lt;-<span class="kw">read_xlsx</span>(<span class="st">&quot;2018-05-12_Data/School information and student demographics/sif_data_table_2015_2016_en.xlsx&quot;</span>,
+              <span class="dt">sheet=</span><span class="dv">1</span>)
+<span class="co"># Code lists to remove NA values</span>
+code.list&lt;-<span class="kw">c</span>(<span class="st">&quot;A/D&quot;</span>,<span class="st">&quot;NA&quot;</span>,<span class="st">&quot;N/R&quot;</span>,<span class="st">&quot;N/A&quot;</span>,<span class="st">&quot;S. R.&quot;</span>,<span class="st">&quot;N/D&quot;</span>)
+code.list2&lt;-<span class="kw">c</span>(<span class="st">&quot;NA&quot;</span>,<span class="st">&quot;SP&quot;</span>)
+
+<span class="co"># Creating and then merging separate grade 3 and 6 data-frames, simplifying</span>
+<span class="co"># df&#39;s to only contain information needed for analysis</span>
+grade3math&lt;-df <span class="op">%&gt;%</span>
+<span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(<span class="st">`</span><span class="dt">School Name</span><span class="st">`</span>,<span class="st">`</span><span class="dt">Percentage of Grade 3 Students Achieving the Provincial Standard in Mathematics</span><span class="st">`</span>,
+         <span class="st">`</span><span class="dt">Percentage of Children Who Live in Low-Income Households</span><span class="st">`</span>,
+         Latitude,
+         Longitude,
+         Enrolment,
+         <span class="st">`</span><span class="dt">Postal Code</span><span class="st">`</span>
+  ) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span>(<span class="st">`</span><span class="dt">Percentage of Grade 3 Students Achieving the Provincial Standard in Mathematics</span><span class="st">`</span> <span class="op">%in%</span><span class="st"> </span>code.list),
+         <span class="op">!</span>(<span class="st">`</span><span class="dt">Percentage of Children Who Live in Low-Income Households</span><span class="st">`</span> <span class="op">%in%</span><span class="st"> </span>code.list2))<span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Grade=</span><span class="st">&quot;Grade 3&quot;</span>,<span class="dt">FSA=</span><span class="kw">substr</span>(<span class="st">`</span><span class="dt">Postal Code</span><span class="st">`</span>,<span class="dv">1</span>,<span class="dv">3</span>))
+<span class="kw">names</span>(grade3math)[<span class="dv">2</span>]&lt;-<span class="st">&quot;Score&quot;</span>
+<span class="kw">names</span>(grade3math)[<span class="dv">3</span>]&lt;-<span class="st">&quot;LI&quot;</span>
+grade3math<span class="op">$</span>Score&lt;-<span class="kw">as.numeric</span>(grade3math<span class="op">$</span>Score)
+grade3math<span class="op">$</span>LI&lt;-<span class="kw">as.numeric</span>(grade3math<span class="op">$</span>LI)
+
+grade6math&lt;-df <span class="op">%&gt;%</span>
+<span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(<span class="st">`</span><span class="dt">School Name</span><span class="st">`</span>,<span class="st">`</span><span class="dt">Percentage of Grade 6 Students Achieving the Provincial Standard in Mathematics</span><span class="st">`</span>,
+         <span class="st">`</span><span class="dt">Percentage of Children Who Live in Low-Income Households</span><span class="st">`</span>,
+         Latitude,
+         Longitude,
+         Enrolment,
+         <span class="st">`</span><span class="dt">Postal Code</span><span class="st">`</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span>(<span class="st">`</span><span class="dt">Percentage of Grade 6 Students Achieving the Provincial Standard in Mathematics</span><span class="st">`</span> <span class="op">%in%</span><span class="st"> </span>code.list),
+         <span class="op">!</span>(<span class="st">`</span><span class="dt">Percentage of Children Who Live in Low-Income Households</span><span class="st">`</span> <span class="op">%in%</span><span class="st"> </span>code.list2))<span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Grade=</span><span class="st">&quot;Grade 6&quot;</span>,<span class="dt">FSA=</span><span class="kw">substr</span>(<span class="st">`</span><span class="dt">Postal Code</span><span class="st">`</span>,<span class="dv">1</span>,<span class="dv">3</span>))
+<span class="kw">names</span>(grade6math)[<span class="dv">2</span>]&lt;-<span class="st">&quot;Score&quot;</span>
+<span class="kw">names</span>(grade6math)[<span class="dv">3</span>]&lt;-<span class="st">&quot;LI&quot;</span>
+grade6math<span class="op">$</span>LI&lt;-<span class="kw">as.numeric</span>(grade6math<span class="op">$</span>LI)
+grade6math<span class="op">$</span>Score&lt;-<span class="kw">as.numeric</span>(grade6math<span class="op">$</span>Score)
+
+<span class="co"># Class size information #</span>
+
+class.size&lt;-<span class="kw">read_xlsx</span>(<span class="st">&quot;2018-05-12_Data/Primary Class Size/2016-10oct-20_-ontario_open_data_-_all_classes_1.xlsx&quot;</span>,<span class="dt">sheet=</span><span class="dv">9</span>)
+
+
+class.size&lt;-class.size <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">group_by</span>(SCHOOLNAME) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">G3ClassSize=</span><span class="kw">sum</span>(G3),<span class="dt">G4TO8ClassSize=</span><span class="kw">sum</span>(G4TO8))
+<span class="kw">names</span>(class.size)[<span class="dv">1</span>]&lt;-<span class="st">&quot;School Name&quot;</span>
+
+<span class="co"># Merging class size, achievement and LI information</span>
+grade3math&lt;-<span class="kw">left_join</span>(grade3math,class.size[,<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>])
+
+<span class="co"># Note: Lose 436 GR3 schools due to school names being labelled differently</span>
+<span class="co"># between primary class size and student achievement datasets.</span>
+grade3math&lt;-grade3math[<span class="kw">complete.cases</span>(grade3math),] 
+grade6math&lt;-<span class="kw">left_join</span>(grade6math,class.size[,<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">3</span>)])
+
+<span class="co"># Note: Lose 439 GR6 schools due to school names being labelled differently</span>
+<span class="co"># between primary class size and student achievement datasets.</span>
+grade6math&lt;-grade6math[<span class="kw">complete.cases</span>(grade6math),] 
+
+
+<span class="co"># Creating new weighted achievement variable by FSA</span>
+grade3math2&lt;-<span class="st"> </span>grade3math <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">NumStudents=</span>Score<span class="op">*</span>G3ClassSize) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">group_by</span>(FSA) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">FSAScore=</span><span class="kw">sum</span>(NumStudents)<span class="op">/</span><span class="kw">sum</span>(G3ClassSize))
+grade6math2&lt;-<span class="st"> </span>grade6math <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">group_by</span>(FSA) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">FSAScore=</span><span class="kw">mean</span>(Score))
+
+<span class="co"># Geospatial shapefile information #</span>
+shp &lt;-<span class="st"> </span><span class="kw">shapefile</span>(<span class="st">&quot;G:/Blog/2018-01-27_Toronto-Paramedic-Services-Incident-Post/Data/lfsa000b16a_e.shp&quot;</span>) 
+Ontario_shp&lt;-shp[shp<span class="op">@</span>data<span class="op">$</span>PRNAME<span class="op">==</span><span class="st">&quot;Ontario&quot;</span>,] 
+<span class="kw">names</span>(Ontario_shp<span class="op">@</span>data)&lt;-<span class="kw">c</span>(<span class="st">&quot;FSA&quot;</span>,<span class="st">&quot;ID&quot;</span>,<span class="st">&quot;PRNAME&quot;</span>)
+
+<span class="co"># Merging student achievement data with geo spatial data</span>
+Ontario_shp<span class="op">@</span>data&lt;-<span class="kw">left_join</span>(Ontario_shp<span class="op">@</span>data,grade3math2)
+<span class="kw">names</span>(Ontario_shp<span class="op">@</span>data)[<span class="dv">4</span>]&lt;-<span class="st">&quot;Percent of Grade 3 Students&quot;</span>
+Ontario_shp<span class="op">@</span>data<span class="op">$</span><span class="st">`</span><span class="dt">Percent of Grade 3 Students</span><span class="st">`</span>&lt;-Ontario_shp<span class="op">@</span>data<span class="op">$</span><span class="st">`</span><span class="dt">Percent of Grade 3 Students</span><span class="st">`</span><span class="op">*</span><span class="dv">100</span>
+
+Ontario_shp<span class="op">@</span>data&lt;-<span class="kw">left_join</span>(Ontario_shp<span class="op">@</span>data,grade6math2)
+<span class="kw">names</span>(Ontario_shp<span class="op">@</span>data)[<span class="dv">5</span>]&lt;-<span class="st">&quot;Percent of Grade 6 Students&quot;</span>
+Ontario_shp<span class="op">@</span>data<span class="op">$</span><span class="st">`</span><span class="dt">Percent of Grade 6 Students</span><span class="st">`</span>&lt;-Ontario_shp<span class="op">@</span>data<span class="op">$</span><span class="st">`</span><span class="dt">Percent of Grade 6 Students</span><span class="st">`</span><span class="op">*</span><span class="dv">100</span></code></pre></div>
+</div>
+<div id="results" class="section level3">
+<h3>Results</h3>
+<div id="proportion-of-grade-3-students-meeting-provincial-standard-in-mathematics-by-fsa" class="section level4">
+<h4>Proportion of Grade 3 Students Meeting Provincial Standard in Mathematics by FSA</h4>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">knitr<span class="op">::</span><span class="kw">include_graphics</span>(<span class="st">&quot;gr3.png&quot;</span>)</code></pre></div>
+<p><img src="gr3.png" width="1000px" height="1200px" /></p>
+</div>
+<div id="proportion-of-grade-6-students-meeting-provincial-standard-in-mathematics-by-fsa" class="section level4">
+<h4>Proportion of Grade 6 Students Meeting Provincial Standard in Mathematics by FSA</h4>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">knitr<span class="op">::</span><span class="kw">include_graphics</span>(<span class="st">&quot;gr6.png&quot;</span>)</code></pre></div>
+<p><img src="gr6.png" width="1000px" height="1200px" /></p>
+</div>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
