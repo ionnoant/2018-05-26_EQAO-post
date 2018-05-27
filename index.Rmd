@@ -137,13 +137,13 @@ Ontario_shp@data$`Percent of Grade 6 Students`<-Ontario_shp@data$`Percent of Gra
 
 ### Results
 
-#### Proportion of Grade 3 Students Meeting Provincial Standard in Mathematics by FSA
+#### Proportion of Grade 3 Students Meeting the Provincial Standard in Mathematics by FSA
 
 ```{r,cache=FALSE,out.height="1200px",out.width="1000px",message=FALSE,warning=FALSE }
 knitr::include_graphics("gr3.png")
 ```
 
-#### Proportion of Grade 6 Students Meeting Provincial Standard in Mathematics by FSA
+#### Proportion of Grade 6 Students Meeting the Provincial Standard in Mathematics by FSA
 
 ```{r,cache=FALSE,out.height="1200px",out.width="1000px",message=FALSE,warning=FALSE }
 knitr::include_graphics("gr6.png")
