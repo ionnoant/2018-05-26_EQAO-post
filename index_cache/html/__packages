@@ -23,3 +23,7 @@ tibble
 tidyr
 purrr
 bindrcpp
+broom
+viridisLite
+viridis
+geojsonio
