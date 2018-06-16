@@ -35,7 +35,8 @@ The following R libraries were loaded into R for this analysis.
 ```{r,message=FALSE,warning=FALSE,cache=TRUE}
 library(dplyr);library(magrittr);library(ggplot2);library(readr)
 library(readxl);library(extrafont);library(tmap);library(rgdal);
-library(raster);library(tmaptools);library(tidyverse)
+library(raster);library(tmaptools);library(tidyverse);library(broom)
+library(viridis)
 ```
 
 ### Preprocessing
@@ -133,18 +134,188 @@ Ontario_shp@data<-left_join(Ontario_shp@data,grade6math2)
 names(Ontario_shp@data)[5]<-"Percent of Grade 6 Students"
 Ontario_shp@data$`Percent of Grade 6 Students`<-Ontario_shp@data$`Percent of Grade 6 Students`*100
 
+# Creating rownames in order to merge with tidy() later on.
+Ontario_shp@data$id<-rownames(Ontario_shp@data)
+Ontario_shp2<-tidy(Ontario_shp, region="id")
+Ontario_shp2<-left_join(Ontario_shp2,Ontario_shp@data,by="id")
+
+Ontario_shp2<-Ontario_shp2 %>%
+  mutate(Region=ifelse(grepl("P[0-9][A-Z]",FSA),"Northern Ontario",
+                       ifelse(grepl("M[0-9][A-Z]",FSA),"Toronto",
+                              ifelse(grepl("K[0-9][A-Z]",FSA),"Eastern Ontario",
+                                     ifelse(grepl("N[0-9][A-Z]",FSA),"Southern Ontario",
+                                            ifelse(grepl("L[0-9][A-Z]",FSA),"Central Ontario","NA"))))))
+
+
+# Custom Map Theme
+theme_map <- function(){
+  theme_minimal() +
+    theme(
+      text = element_text(family = "Segoe UI", color = "gray25"),
+      plot.title = element_text(size=16),
+      plot.subtitle = element_text(size = 14),
+      #legend.position = "top",
+      axis.text = element_blank(),
+      axis.title = element_blank(),
+      plot.caption = element_text(color = "gray30", size=12),
+      plot.background = element_rect(fill = "gray95"),
+      panel.grid = element_blank()
+      #axis.line = element_line(color="gray50")
+      #axis.ticks.x = element_line(color="gray35"),
+      #panel.grid.major.y = element_line(colour = "gray80")
+      )
+}
 ```
 
 ### Results
 
 #### Proportion of Grade 3 Students Meeting the Provincial Standard in Mathematics by FSA
 
-```{r,cache=FALSE,out.height="1200px",out.width="1000px",message=FALSE,warning=FALSE }
-knitr::include_graphics("gr3.png")
+```{r,cache=FALSE,out.height="1000px",out.width="1000px",message=FALSE,warning=FALSE,dpi=300}
+
+##################
+# Grade 3 maps
+##################
+
+# # Ontario
+# gr3_map0<-ggplot()+
+#   geom_polygon(data=Ontario_shp2[complete.cases(Ontario_shp2),],
+#                aes(x=long, y=lat,group=group,fill=`Percent of Grade 3 Students`),
+#                color="black",size=0.0)
+# gr3_map0<-gr3_map0+ scale_fill_viridis(option = "D",direction=-1)
+# gr3_map0<-gr3_map0 + theme_map() + coord_fixed()
+# gr3_map0<-gr3_map0 + labs(title="Percent of grade 3 students in Ontario meeting the\nprovincial standard in math",
+#                 caption="Source: Ontario open data website | Creation: Anthony Ionno") 
+# gr3_map0
+knitr::include_graphics("gr3_map0.png")           
+# # Northern Ontario
+# gr3_map1<-ggplot()+
+#   geom_polygon(data=filter(Ontario_shp2,Region=="Northern Ontario"),
+#                aes(x=long, y=lat,group=group,fill=`Percent of Grade 3 Students`),
+#                color="black",size=0.0)
+# gr3_map1<-gr3_map1+ scale_fill_viridis(option = "D",direction=-1)
+# gr3_map1<-gr3_map1 + theme_map() + coord_fixed()
+# gr3_map1 + labs(title="Percent of grade 3 students in northern Ontario meeting the\nprovincial standard in math",
+#                 caption="Source: Ontario open data website | Creation: Anthony Ionno") 
+knitr::include_graphics("gr3_map1.png") 
+# # Toronto
+# gr3_map2<-ggplot()+
+#   geom_polygon(data=filter(Ontario_shp2,Region=="Toronto"),
+#                aes(x=long, y=lat,group=group,fill=`Percent of Grade 3 Students`),
+#                color="black",size=0.0)
+# gr3_map2<-gr3_map2+ scale_fill_viridis(option = "D",direction=-1)
+# gr3_map2<-gr3_map2 + theme_map() + coord_fixed()
+# gr3_map2 + labs(title="Percent of grade 3 students in Toronto meeting the\nprovincial standard in math",
+#                 caption="Source: Ontario open data website | Creation: Anthony Ionno") 
+knitr::include_graphics("gr3_map2.png") 
+# 
+# # Central Ontario
+# gr3_map3<-ggplot()+
+#   geom_polygon(data=filter(Ontario_shp2,Region=="Central Ontario"),
+#                aes(x=long, y=lat,group=group,fill=`Percent of Grade 3 Students`),
+#                color="black",size=0.0)
+# gr3_map3<-gr3_map3+ scale_fill_viridis(option = "D",direction=-1)
+# gr3_map3<-gr3_map3 + theme_map() + coord_fixed()
+# gr3_map3 + labs(title="Percent of grade 3 students in central Ontario meeting the\nprovincial standard in math",
+#                 caption="Source: Ontario open data website | Creation: Anthony Ionno") 
+knitr::include_graphics("gr3_map3.png") 
+# 
+# # Eastern Ontario
+# gr3_map4<-ggplot()+
+#   geom_polygon(data=filter(Ontario_shp2,Region=="Eastern Ontario"),
+#                aes(x=long, y=lat,group=group,fill=`Percent of Grade 3 Students`),
+#                color="black",size=0.0)
+# gr3_map4<-gr3_map4+ scale_fill_viridis(option = "D",direction=-1)
+# gr3_map4<-gr3_map4 + theme_map() + coord_fixed()
+# gr3_map4 + labs(title="Percent of grade 3 students in eastern Ontario meeting the\nprovincial standard in math",
+#                 caption="Source: Ontario open data website | Creation: Anthony Ionno") 
+knitr::include_graphics("gr3_map4.png") 
+# # Southern Ontario
+# 
+# gr3_map5<-ggplot()+
+#   geom_polygon(data=filter(Ontario_shp2,Region=="Southern Ontario"),
+#                aes(x=long, y=lat,group=group,fill=`Percent of Grade 3 Students`),
+#                color="black",size=0)
+# gr3_map5<-gr3_map5+ scale_fill_viridis(option = "D",direction = -1)
+# gr3_map5<-gr3_map5 + theme_map() + coord_fixed()
+# gr3_map5 + labs(title="Percent of grade 3 students in southern Ontario meeting the\nprovincial standard in math",
+#                 caption="Source: Ontario open data website | Creation: Anthony Ionno") 
+knitr::include_graphics("gr3_map5.png") 
+
 ```
 
 #### Proportion of Grade 6 Students Meeting the Provincial Standard in Mathematics by FSA
 
-```{r,cache=FALSE,out.height="1200px",out.width="1000px",message=FALSE,warning=FALSE }
-knitr::include_graphics("gr6.png")
+```{r,cache=FALSE,out.height="1000px",out.width="1000px",message=FALSE,warning=FALSE,dpi=300}
+##################
+# Grade 6 maps
+##################
+
+# # Ontario
+# gr6_map0<-ggplot()+
+#   geom_polygon(data=Ontario_shp2[complete.cases(Ontario_shp2),],
+#                aes(x=long, y=lat,group=group,fill=`Percent of Grade 6 Students`),
+#                color="black",size=0.0)
+# gr6_map0<-gr6_map0+ scale_fill_viridis(option = "D",direction=-1)
+# gr6_map0<-gr6_map0 + theme_map() + coord_fixed()
+# gr6_map0<-gr6_map0 + labs(title="Percent of grade 6 students in Ontario meeting the\nprovincial standard in math",
+#                           caption="Source: Ontario open data website | Creation: Anthony Ionno") 
+knitr::include_graphics("gr6_map0.png") 
+# 
+# # Northern Ontario
+# gr6_map1<-ggplot()+
+#   geom_polygon(data=filter(Ontario_shp2,Region=="Northern Ontario"),
+#                aes(x=long, y=lat,group=group,fill=`Percent of Grade 6 Students`),
+#                color="black",size=0.0)
+# gr6_map1<-gr6_map1+ scale_fill_viridis(option = "D",direction=-1)
+# gr6_map1<-gr6_map1 + theme_map() + coord_fixed()
+# gr6_map1 + labs(title="Percent of grade 6 students in northern Ontario meeting the\nprovincial standard in math",
+#                 caption="Source: Ontario open data website | Creation: Anthony Ionno") 
+knitr::include_graphics("gr6_map1.png") 
+# # Toronto
+# gr6_map2<-ggplot()+
+#   geom_polygon(data=filter(Ontario_shp2,Region=="Toronto"),
+#                aes(x=long, y=lat,group=group,fill=`Percent of Grade 6 Students`),
+#                color="black",size=0.0)
+# gr6_map2<-gr6_map2+ scale_fill_viridis(option = "D",direction=-1)
+# gr6_map2<-gr6_map2 + theme_map() + coord_fixed()
+# gr6_map2 + labs(title="Percent of grade 6 students in Toronto meeting the\nprovincial standard in math",
+#                 caption="Source: Ontario open data website | Creation: Anthony Ionno")
+knitr::include_graphics("gr6_map2.png") 
+# 
+# # Central Ontario
+# gr6_map6<-ggplot()+
+#   geom_polygon(data=filter(Ontario_shp2,Region=="Central Ontario"),
+#                aes(x=long, y=lat,group=group,fill=`Percent of Grade 6 Students`),
+#                color="black",size=0.0)
+# gr6_map6<-gr6_map6+ scale_fill_viridis(option = "D",direction=-1)
+# gr6_map6<-gr6_map6 + theme_map() + coord_fixed()
+# gr6_map6 + labs(title="Percent of grade 6 students in central Ontario meeting the\nprovincial standard in math",
+#                 caption="Source: Ontario open data website | Creation: Anthony Ionno") 
+knitr::include_graphics("gr6_map3.png") 
+# 
+# # Eastern Ontario
+# gr6_map4<-ggplot()+
+#   geom_polygon(data=filter(Ontario_shp2,Region=="Eastern Ontario"),
+#                aes(x=long, y=lat,group=group,fill=`Percent of Grade 6 Students`),
+#                color="black",size=0.0)
+# gr6_map4<-gr6_map4+ scale_fill_viridis(option = "D",direction=-1)
+# gr6_map4<-gr6_map4 + theme_map() + coord_fixed()
+# gr6_map4 + labs(title="Percent of grade 6 students in eastern Ontario meeting the\nprovincial standard in math",
+#                 caption="Source: Ontario open data website | Creation: Anthony Ionno") 
+knitr::include_graphics("gr6_map4.png") 
+
+# # Southern Ontario
+# 
+# gr6_map4<-ggplot()+
+#   geom_polygon(data=filter(Ontario_shp2,Region=="Southern Ontario"),
+#                aes(x=long, y=lat,group=group,fill=`Percent of Grade 6 Students`),
+#                color="black",size=0)
+# gr6_map4<-gr6_map4+ scale_fill_viridis(option = "D",direction = -1)
+# gr6_map4<-gr6_map4 + theme_map() + coord_fixed()
+# gr6_map4 + labs(title="Percent of grade 6 students in southern Ontario meeting the\nprovincial standard in math",
+#                 caption="Source: Ontario open data website | Creation: Anthony Ionno") 
+knitr::include_graphics("gr6_map5.png") 
+
+
 ```

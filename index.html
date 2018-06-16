@@ -185,7 +185,8 @@ $(document).ready(function () {
 <p>The following R libraries were loaded into R for this analysis.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr);<span class="kw">library</span>(magrittr);<span class="kw">library</span>(ggplot2);<span class="kw">library</span>(readr)
 <span class="kw">library</span>(readxl);<span class="kw">library</span>(extrafont);<span class="kw">library</span>(tmap);<span class="kw">library</span>(rgdal);
-<span class="kw">library</span>(raster);<span class="kw">library</span>(tmaptools);<span class="kw">library</span>(tidyverse)</code></pre></div>
+<span class="kw">library</span>(raster);<span class="kw">library</span>(tmaptools);<span class="kw">library</span>(tidyverse);<span class="kw">library</span>(broom)
+<span class="kw">library</span>(viridis)</code></pre></div>
 </div>
 <div id="preprocessing" class="section level3">
 <h3>Preprocessing</h3>
@@ -277,19 +278,195 @@ Ontario_shp<span class="op">@</span>data<span class="op">$</span><span class="st
 
 Ontario_shp<span class="op">@</span>data&lt;-<span class="kw">left_join</span>(Ontario_shp<span class="op">@</span>data,grade6math2)
 <span class="kw">names</span>(Ontario_shp<span class="op">@</span>data)[<span class="dv">5</span>]&lt;-<span class="st">&quot;Percent of Grade 6 Students&quot;</span>
-Ontario_shp<span class="op">@</span>data<span class="op">$</span><span class="st">`</span><span class="dt">Percent of Grade 6 Students</span><span class="st">`</span>&lt;-Ontario_shp<span class="op">@</span>data<span class="op">$</span><span class="st">`</span><span class="dt">Percent of Grade 6 Students</span><span class="st">`</span><span class="op">*</span><span class="dv">100</span></code></pre></div>
+Ontario_shp<span class="op">@</span>data<span class="op">$</span><span class="st">`</span><span class="dt">Percent of Grade 6 Students</span><span class="st">`</span>&lt;-Ontario_shp<span class="op">@</span>data<span class="op">$</span><span class="st">`</span><span class="dt">Percent of Grade 6 Students</span><span class="st">`</span><span class="op">*</span><span class="dv">100</span>
+
+<span class="co"># Creating rownames in order to merge with tidy() later on.</span>
+Ontario_shp<span class="op">@</span>data<span class="op">$</span>id&lt;-<span class="kw">rownames</span>(Ontario_shp<span class="op">@</span>data)
+Ontario_shp2&lt;-<span class="kw">tidy</span>(Ontario_shp, <span class="dt">region=</span><span class="st">&quot;id&quot;</span>)
+Ontario_shp2&lt;-<span class="kw">left_join</span>(Ontario_shp2,Ontario_shp<span class="op">@</span>data,<span class="dt">by=</span><span class="st">&quot;id&quot;</span>)
+
+Ontario_shp2&lt;-Ontario_shp2 <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Region=</span><span class="kw">ifelse</span>(<span class="kw">grepl</span>(<span class="st">&quot;P[0-9][A-Z]&quot;</span>,FSA),<span class="st">&quot;Northern Ontario&quot;</span>,
+                       <span class="kw">ifelse</span>(<span class="kw">grepl</span>(<span class="st">&quot;M[0-9][A-Z]&quot;</span>,FSA),<span class="st">&quot;Toronto&quot;</span>,
+                              <span class="kw">ifelse</span>(<span class="kw">grepl</span>(<span class="st">&quot;K[0-9][A-Z]&quot;</span>,FSA),<span class="st">&quot;Eastern Ontario&quot;</span>,
+                                     <span class="kw">ifelse</span>(<span class="kw">grepl</span>(<span class="st">&quot;N[0-9][A-Z]&quot;</span>,FSA),<span class="st">&quot;Southern Ontario&quot;</span>,
+                                            <span class="kw">ifelse</span>(<span class="kw">grepl</span>(<span class="st">&quot;L[0-9][A-Z]&quot;</span>,FSA),<span class="st">&quot;Central Ontario&quot;</span>,<span class="st">&quot;NA&quot;</span>))))))
+
+
+<span class="co"># Custom Map Theme</span>
+theme_map &lt;-<span class="st"> </span><span class="cf">function</span>(){
+  <span class="kw">theme_minimal</span>() <span class="op">+</span>
+<span class="st">    </span><span class="kw">theme</span>(
+      <span class="dt">text =</span> <span class="kw">element_text</span>(<span class="dt">family =</span> <span class="st">&quot;Segoe UI&quot;</span>, <span class="dt">color =</span> <span class="st">&quot;gray25&quot;</span>),
+      <span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">size=</span><span class="dv">16</span>),
+      <span class="dt">plot.subtitle =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">14</span>),
+      <span class="co">#legend.position = &quot;top&quot;,</span>
+      <span class="dt">axis.text =</span> <span class="kw">element_blank</span>(),
+      <span class="dt">axis.title =</span> <span class="kw">element_blank</span>(),
+      <span class="dt">plot.caption =</span> <span class="kw">element_text</span>(<span class="dt">color =</span> <span class="st">&quot;gray30&quot;</span>, <span class="dt">size=</span><span class="dv">12</span>),
+      <span class="dt">plot.background =</span> <span class="kw">element_rect</span>(<span class="dt">fill =</span> <span class="st">&quot;gray95&quot;</span>),
+      <span class="dt">panel.grid =</span> <span class="kw">element_blank</span>()
+      <span class="co">#axis.line = element_line(color=&quot;gray50&quot;)</span>
+      <span class="co">#axis.ticks.x = element_line(color=&quot;gray35&quot;),</span>
+      <span class="co">#panel.grid.major.y = element_line(colour = &quot;gray80&quot;)</span>
+      )
+}</code></pre></div>
 </div>
 <div id="results" class="section level3">
 <h3>Results</h3>
 <div id="proportion-of-grade-3-students-meeting-the-provincial-standard-in-mathematics-by-fsa" class="section level4">
 <h4>Proportion of Grade 3 Students Meeting the Provincial Standard in Mathematics by FSA</h4>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">knitr<span class="op">::</span><span class="kw">include_graphics</span>(<span class="st">&quot;gr3.png&quot;</span>)</code></pre></div>
-<p><img src="gr3.png" width="1000px" height="1200px" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##################
+<span class="co"># Grade 3 maps</span>
+##################
+
+<span class="co"># # Ontario</span>
+<span class="co"># gr3_map0&lt;-ggplot()+</span>
+<span class="co">#   geom_polygon(data=Ontario_shp2[complete.cases(Ontario_shp2),],</span>
+<span class="co">#                aes(x=long, y=lat,group=group,fill=`Percent of Grade 3 Students`),</span>
+<span class="co">#                color=&quot;black&quot;,size=0.0)</span>
+<span class="co"># gr3_map0&lt;-gr3_map0+ scale_fill_viridis(option = &quot;D&quot;,direction=-1)</span>
+<span class="co"># gr3_map0&lt;-gr3_map0 + theme_map() + coord_fixed()</span>
+<span class="co"># gr3_map0&lt;-gr3_map0 + labs(title=&quot;Percent of grade 3 students in Ontario meeting the\nprovincial standard in math&quot;,</span>
+<span class="co">#                 caption=&quot;Source: Ontario open data website | Creation: Anthony Ionno&quot;) </span>
+<span class="co"># gr3_map0</span>
+knitr<span class="op">::</span><span class="kw">include_graphics</span>(<span class="st">&quot;gr3_map0.png&quot;</span>)           </code></pre></div>
+<p><img src="gr3_map0.png" width="1000px" height="1000px" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># # Northern Ontario</span>
+<span class="co"># gr3_map1&lt;-ggplot()+</span>
+<span class="co">#   geom_polygon(data=filter(Ontario_shp2,Region==&quot;Northern Ontario&quot;),</span>
+<span class="co">#                aes(x=long, y=lat,group=group,fill=`Percent of Grade 3 Students`),</span>
+<span class="co">#                color=&quot;black&quot;,size=0.0)</span>
+<span class="co"># gr3_map1&lt;-gr3_map1+ scale_fill_viridis(option = &quot;D&quot;,direction=-1)</span>
+<span class="co"># gr3_map1&lt;-gr3_map1 + theme_map() + coord_fixed()</span>
+<span class="co"># gr3_map1 + labs(title=&quot;Percent of grade 3 students in northern Ontario meeting the\nprovincial standard in math&quot;,</span>
+<span class="co">#                 caption=&quot;Source: Ontario open data website | Creation: Anthony Ionno&quot;) </span>
+knitr<span class="op">::</span><span class="kw">include_graphics</span>(<span class="st">&quot;gr3_map1.png&quot;</span>) </code></pre></div>
+<p><img src="gr3_map1.png" width="1000px" height="1000px" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># # Toronto</span>
+<span class="co"># gr3_map2&lt;-ggplot()+</span>
+<span class="co">#   geom_polygon(data=filter(Ontario_shp2,Region==&quot;Toronto&quot;),</span>
+<span class="co">#                aes(x=long, y=lat,group=group,fill=`Percent of Grade 3 Students`),</span>
+<span class="co">#                color=&quot;black&quot;,size=0.0)</span>
+<span class="co"># gr3_map2&lt;-gr3_map2+ scale_fill_viridis(option = &quot;D&quot;,direction=-1)</span>
+<span class="co"># gr3_map2&lt;-gr3_map2 + theme_map() + coord_fixed()</span>
+<span class="co"># gr3_map2 + labs(title=&quot;Percent of grade 3 students in Toronto meeting the\nprovincial standard in math&quot;,</span>
+<span class="co">#                 caption=&quot;Source: Ontario open data website | Creation: Anthony Ionno&quot;) </span>
+knitr<span class="op">::</span><span class="kw">include_graphics</span>(<span class="st">&quot;gr3_map2.png&quot;</span>) </code></pre></div>
+<p><img src="gr3_map2.png" width="1000px" height="1000px" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># </span>
+<span class="co"># # Central Ontario</span>
+<span class="co"># gr3_map3&lt;-ggplot()+</span>
+<span class="co">#   geom_polygon(data=filter(Ontario_shp2,Region==&quot;Central Ontario&quot;),</span>
+<span class="co">#                aes(x=long, y=lat,group=group,fill=`Percent of Grade 3 Students`),</span>
+<span class="co">#                color=&quot;black&quot;,size=0.0)</span>
+<span class="co"># gr3_map3&lt;-gr3_map3+ scale_fill_viridis(option = &quot;D&quot;,direction=-1)</span>
+<span class="co"># gr3_map3&lt;-gr3_map3 + theme_map() + coord_fixed()</span>
+<span class="co"># gr3_map3 + labs(title=&quot;Percent of grade 3 students in central Ontario meeting the\nprovincial standard in math&quot;,</span>
+<span class="co">#                 caption=&quot;Source: Ontario open data website | Creation: Anthony Ionno&quot;) </span>
+knitr<span class="op">::</span><span class="kw">include_graphics</span>(<span class="st">&quot;gr3_map3.png&quot;</span>) </code></pre></div>
+<p><img src="gr3_map3.png" width="1000px" height="1000px" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># </span>
+<span class="co"># # Eastern Ontario</span>
+<span class="co"># gr3_map4&lt;-ggplot()+</span>
+<span class="co">#   geom_polygon(data=filter(Ontario_shp2,Region==&quot;Eastern Ontario&quot;),</span>
+<span class="co">#                aes(x=long, y=lat,group=group,fill=`Percent of Grade 3 Students`),</span>
+<span class="co">#                color=&quot;black&quot;,size=0.0)</span>
+<span class="co"># gr3_map4&lt;-gr3_map4+ scale_fill_viridis(option = &quot;D&quot;,direction=-1)</span>
+<span class="co"># gr3_map4&lt;-gr3_map4 + theme_map() + coord_fixed()</span>
+<span class="co"># gr3_map4 + labs(title=&quot;Percent of grade 3 students in eastern Ontario meeting the\nprovincial standard in math&quot;,</span>
+<span class="co">#                 caption=&quot;Source: Ontario open data website | Creation: Anthony Ionno&quot;) </span>
+knitr<span class="op">::</span><span class="kw">include_graphics</span>(<span class="st">&quot;gr3_map4.png&quot;</span>) </code></pre></div>
+<p><img src="gr3_map4.png" width="1000px" height="1000px" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># # Southern Ontario</span>
+<span class="co"># </span>
+<span class="co"># gr3_map5&lt;-ggplot()+</span>
+<span class="co">#   geom_polygon(data=filter(Ontario_shp2,Region==&quot;Southern Ontario&quot;),</span>
+<span class="co">#                aes(x=long, y=lat,group=group,fill=`Percent of Grade 3 Students`),</span>
+<span class="co">#                color=&quot;black&quot;,size=0)</span>
+<span class="co"># gr3_map5&lt;-gr3_map5+ scale_fill_viridis(option = &quot;D&quot;,direction = -1)</span>
+<span class="co"># gr3_map5&lt;-gr3_map5 + theme_map() + coord_fixed()</span>
+<span class="co"># gr3_map5 + labs(title=&quot;Percent of grade 3 students in southern Ontario meeting the\nprovincial standard in math&quot;,</span>
+<span class="co">#                 caption=&quot;Source: Ontario open data website | Creation: Anthony Ionno&quot;) </span>
+knitr<span class="op">::</span><span class="kw">include_graphics</span>(<span class="st">&quot;gr3_map5.png&quot;</span>) </code></pre></div>
+<p><img src="gr3_map5.png" width="1000px" height="1000px" /></p>
 </div>
 <div id="proportion-of-grade-6-students-meeting-the-provincial-standard-in-mathematics-by-fsa" class="section level4">
 <h4>Proportion of Grade 6 Students Meeting the Provincial Standard in Mathematics by FSA</h4>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">knitr<span class="op">::</span><span class="kw">include_graphics</span>(<span class="st">&quot;gr6.png&quot;</span>)</code></pre></div>
-<p><img src="gr6.png" width="1000px" height="1200px" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">##################
+<span class="co"># Grade 6 maps</span>
+##################
+
+<span class="co"># # Ontario</span>
+<span class="co"># gr6_map0&lt;-ggplot()+</span>
+<span class="co">#   geom_polygon(data=Ontario_shp2[complete.cases(Ontario_shp2),],</span>
+<span class="co">#                aes(x=long, y=lat,group=group,fill=`Percent of Grade 6 Students`),</span>
+<span class="co">#                color=&quot;black&quot;,size=0.0)</span>
+<span class="co"># gr6_map0&lt;-gr6_map0+ scale_fill_viridis(option = &quot;D&quot;,direction=-1)</span>
+<span class="co"># gr6_map0&lt;-gr6_map0 + theme_map() + coord_fixed()</span>
+<span class="co"># gr6_map0&lt;-gr6_map0 + labs(title=&quot;Percent of grade 6 students in Ontario meeting the\nprovincial standard in math&quot;,</span>
+<span class="co">#                           caption=&quot;Source: Ontario open data website | Creation: Anthony Ionno&quot;) </span>
+knitr<span class="op">::</span><span class="kw">include_graphics</span>(<span class="st">&quot;gr6_map0.png&quot;</span>) </code></pre></div>
+<p><img src="gr6_map0.png" width="1000px" height="1000px" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># </span>
+<span class="co"># # Northern Ontario</span>
+<span class="co"># gr6_map1&lt;-ggplot()+</span>
+<span class="co">#   geom_polygon(data=filter(Ontario_shp2,Region==&quot;Northern Ontario&quot;),</span>
+<span class="co">#                aes(x=long, y=lat,group=group,fill=`Percent of Grade 6 Students`),</span>
+<span class="co">#                color=&quot;black&quot;,size=0.0)</span>
+<span class="co"># gr6_map1&lt;-gr6_map1+ scale_fill_viridis(option = &quot;D&quot;,direction=-1)</span>
+<span class="co"># gr6_map1&lt;-gr6_map1 + theme_map() + coord_fixed()</span>
+<span class="co"># gr6_map1 + labs(title=&quot;Percent of grade 6 students in northern Ontario meeting the\nprovincial standard in math&quot;,</span>
+<span class="co">#                 caption=&quot;Source: Ontario open data website | Creation: Anthony Ionno&quot;) </span>
+knitr<span class="op">::</span><span class="kw">include_graphics</span>(<span class="st">&quot;gr6_map1.png&quot;</span>) </code></pre></div>
+<p><img src="gr6_map1.png" width="1000px" height="1000px" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># # Toronto</span>
+<span class="co"># gr6_map2&lt;-ggplot()+</span>
+<span class="co">#   geom_polygon(data=filter(Ontario_shp2,Region==&quot;Toronto&quot;),</span>
+<span class="co">#                aes(x=long, y=lat,group=group,fill=`Percent of Grade 6 Students`),</span>
+<span class="co">#                color=&quot;black&quot;,size=0.0)</span>
+<span class="co"># gr6_map2&lt;-gr6_map2+ scale_fill_viridis(option = &quot;D&quot;,direction=-1)</span>
+<span class="co"># gr6_map2&lt;-gr6_map2 + theme_map() + coord_fixed()</span>
+<span class="co"># gr6_map2 + labs(title=&quot;Percent of grade 6 students in Toronto meeting the\nprovincial standard in math&quot;,</span>
+<span class="co">#                 caption=&quot;Source: Ontario open data website | Creation: Anthony Ionno&quot;)</span>
+knitr<span class="op">::</span><span class="kw">include_graphics</span>(<span class="st">&quot;gr6_map2.png&quot;</span>) </code></pre></div>
+<p><img src="gr6_map2.png" width="1000px" height="1000px" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># </span>
+<span class="co"># # Central Ontario</span>
+<span class="co"># gr6_map6&lt;-ggplot()+</span>
+<span class="co">#   geom_polygon(data=filter(Ontario_shp2,Region==&quot;Central Ontario&quot;),</span>
+<span class="co">#                aes(x=long, y=lat,group=group,fill=`Percent of Grade 6 Students`),</span>
+<span class="co">#                color=&quot;black&quot;,size=0.0)</span>
+<span class="co"># gr6_map6&lt;-gr6_map6+ scale_fill_viridis(option = &quot;D&quot;,direction=-1)</span>
+<span class="co"># gr6_map6&lt;-gr6_map6 + theme_map() + coord_fixed()</span>
+<span class="co"># gr6_map6 + labs(title=&quot;Percent of grade 6 students in central Ontario meeting the\nprovincial standard in math&quot;,</span>
+<span class="co">#                 caption=&quot;Source: Ontario open data website | Creation: Anthony Ionno&quot;) </span>
+knitr<span class="op">::</span><span class="kw">include_graphics</span>(<span class="st">&quot;gr6_map3.png&quot;</span>) </code></pre></div>
+<p><img src="gr6_map3.png" width="1000px" height="1000px" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># </span>
+<span class="co"># # Eastern Ontario</span>
+<span class="co"># gr6_map4&lt;-ggplot()+</span>
+<span class="co">#   geom_polygon(data=filter(Ontario_shp2,Region==&quot;Eastern Ontario&quot;),</span>
+<span class="co">#                aes(x=long, y=lat,group=group,fill=`Percent of Grade 6 Students`),</span>
+<span class="co">#                color=&quot;black&quot;,size=0.0)</span>
+<span class="co"># gr6_map4&lt;-gr6_map4+ scale_fill_viridis(option = &quot;D&quot;,direction=-1)</span>
+<span class="co"># gr6_map4&lt;-gr6_map4 + theme_map() + coord_fixed()</span>
+<span class="co"># gr6_map4 + labs(title=&quot;Percent of grade 6 students in eastern Ontario meeting the\nprovincial standard in math&quot;,</span>
+<span class="co">#                 caption=&quot;Source: Ontario open data website | Creation: Anthony Ionno&quot;) </span>
+knitr<span class="op">::</span><span class="kw">include_graphics</span>(<span class="st">&quot;gr6_map4.png&quot;</span>) </code></pre></div>
+<p><img src="gr6_map4.png" width="1000px" height="1000px" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># # Southern Ontario</span>
+<span class="co"># </span>
+<span class="co"># gr6_map4&lt;-ggplot()+</span>
+<span class="co">#   geom_polygon(data=filter(Ontario_shp2,Region==&quot;Southern Ontario&quot;),</span>
+<span class="co">#                aes(x=long, y=lat,group=group,fill=`Percent of Grade 6 Students`),</span>
+<span class="co">#                color=&quot;black&quot;,size=0)</span>
+<span class="co"># gr6_map4&lt;-gr6_map4+ scale_fill_viridis(option = &quot;D&quot;,direction = -1)</span>
+<span class="co"># gr6_map4&lt;-gr6_map4 + theme_map() + coord_fixed()</span>
+<span class="co"># gr6_map4 + labs(title=&quot;Percent of grade 6 students in southern Ontario meeting the\nprovincial standard in math&quot;,</span>
+<span class="co">#                 caption=&quot;Source: Ontario open data website | Creation: Anthony Ionno&quot;) </span>
+knitr<span class="op">::</span><span class="kw">include_graphics</span>(<span class="st">&quot;gr6_map5.png&quot;</span>) </code></pre></div>
+<p><img src="gr6_map5.png" width="1000px" height="1000px" /></p>
 </div>
 </div>
 </div>
